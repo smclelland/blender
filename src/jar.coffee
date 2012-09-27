@@ -33,7 +33,7 @@ module.exports = class Jar
     if options.style?
       options.style = path.join(options.dir, "#{options.style}.styl")
       death "Missing main style sheet: #{options.style}" unless fs.existsSync(options.style)
-    
+
     death "Missing main: #{options.main}" unless fs.existsSync(options.main)
 
     # listen for jar changes and additions
@@ -200,7 +200,7 @@ module.exports = class Jar
   builds up the script tags
   ###
   buildDevelopment: (tagList, dependencies, description)->
-    # tagList.push("\n<!-- blender #{description}-->")
+    tagList.push("\n<!-- blender #{description}-->")
 
     for name, node of dependencies
       # support url pass-through
@@ -219,7 +219,7 @@ module.exports = class Jar
       # keep an index of locals around for quick lookups
       @nodeIndex[src] = node unless node.remote
 
-    # tagList.push("\n<!-- end blender #{#{description}} -->\n")
+    tagList.push("\n<!-- end blender #{#{description}} -->\n")
 
 
   ###
