@@ -36,8 +36,43 @@ Compiles my favorites from each.
 
 ## Usage
 
-```js
-  some code
+```coffeescript
+  ###
+  Fire up the blender
+  ###
+  blender.blend app,     
+    common:
+      # optional path added to your scripts /scripts/admin/...
+      url_root: '/scripts'
+
+      # path to production builds
+      build_dir: './test/public'
+
+      # common vendor scripts to include in the build process
+      # prefix with "http://" to designate remote
+      vendors: [
+        # use cdn
+        'http://code.jquery.com/jquery-1.8.2.min.js' 
+        './test/vendor/almond.js'
+        './test/vendor/handlebars.js'
+      ]
+
+    # each additional name is treated as a name-space (i.e. admin/client/web)
+    admin: # namespace
+      # where the files live for this sub-app
+      dir: './test/app_admin'
+
+      # the main.js or .coffee file to begin dependency checking
+      main: 'main'
+
+      # the main style sheet (stylus) for this app
+      style: 'styles/main'
+
+      # any specialized vendors files to include within this name space
+      # surround with [] to modularize. '[./xyz.js]'
+      vendors: [
+      ]
+
 ```
 
 

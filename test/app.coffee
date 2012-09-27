@@ -26,21 +26,20 @@ app.configure ->
   ###
   blender.blend app,     
     common:
-      host: '/scripts'
+      url_root: '/scripts'
       build_dir: './test/public'
       vendors: [
         # use cdn
         'http://code.jquery.com/jquery-1.8.2.min.js' 
-        './vendor/jquery.js'
-        './vendor/almond.js'
-        './vendor/handlebars.js'
+        './test/vendor/almond.js'
+        './test/vendor/handlebars.js'
       ]
+
     admin: # namespace
       dir: './test/app_admin'
       main: 'main'
       style: 'styles/main'
       vendors: [
-        # './vendor/xyz.js'
       ]
 
   app.use express.favicon()
