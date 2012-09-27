@@ -1,26 +1,18 @@
 {
-  "name": "application-name",
+  "name": "app",
+  "description": "app",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "start": "node app"
+  "author": {
+    "name": "Steve"
+  },
+  "engines": {
+    "node": "0.8.x"
   },
   "dependencies": {
-    "express": "3.0.0rc3",
-    "jade": "*",
-    "coffee-script": "*",
-    "underscore": "*",
-    "stylus": "*",
-    "connect-assets" : "*",
-    "socket.io" : "*",
-    "handlebars" : "*",
-    "sugar" : "git+ssh://git@github.com/jimlears/sugar.git",
-    "uglify-js" : "*",
-    "buffertools" : "*",
-    "stylus": "*",
-    "nib": "*",
-    "debug": "git://github.com/visionmedia/debug.git",
-    "async": "*",
-    "sync" : "*"
+    "express" : "*",
+    "private-repo" : "git+ssh://git@github.com:smclelland/blender.git#v0.01"
   }
 }
+
+

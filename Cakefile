@@ -4,7 +4,7 @@ util          = require 'util'
 {print}       = require 'util'
 {spawn, exec} = require 'child_process'
 
-package_name = 'sugar'
+package_name = 'blender'
 
 execute = (cmd) ->
   e = exec cmd
@@ -36,7 +36,7 @@ build = (watch = false) ->
 #  nodemon.stderr.on 'data', (data) -> print data.toString()
 
 task 'install', 'Installs and configures everything the server needs', ->
-  print "#{server_name} -> install\n"
+  # print "#{server_name} -> install\n"
 
   install_options = ['install']
   npm = spawn 'npm', install_options

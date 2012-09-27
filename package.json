@@ -22,7 +22,6 @@
     "coffee-script": "*",
     "underscore": "*",
     "stylus": "*",
-    "connect-assets" : "*",
     "socket.io" : "*",
     "handlebars" : "*",
     "sugar" : "git+ssh://git@github.com/jimlears/sugar.git",
