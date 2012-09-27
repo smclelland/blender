@@ -87,7 +87,7 @@ class Blender
     # for k,v of @nodeIndex
     #   console.log "KEY: #{k} #{v.pathName}"
 
-    res.set('Content-Type', 'application/javascript')
+    res.set('Content-Type', node.contentType)
     res.send(node.contents)
 
   ###

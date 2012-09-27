@@ -198,7 +198,7 @@ module.exports = class Jar
   builds up the script tags
   ###
   buildDevelopment: (tagList, dependencies, description)->
-    tagList.push("\n<!-- blender #{description}-->")
+    # tagList.push("\n<!-- blender #{description}-->")
 
     for name, node of dependencies
       # support url pass-through
@@ -210,14 +210,14 @@ module.exports = class Jar
 
       switch node.type
         when 'script' then tagList.push("\n<script type=\"text/javascript\" src=\"#{src}\"></script>")
-        when 'style'  then tagList.push("\n<link rel=\"stylesheet\" href=\"#{src}\">")
+        when 'style'  then tagList.push("\n<link rel=\"stylesheet\" href=\"#{src}\" type=\"text/css\" media=\"screen\">")
         else 
           death('unknown node type')
 
       # keep an index of locals around for quick lookups
       @nodeIndex[src] = node unless node.remote
 
-    tagList.push("\n<!-- end blender #{#{description}} -->\n")
+    # tagList.push("\n<!-- end blender #{#{description}} -->\n")
 
 
   ###

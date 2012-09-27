@@ -19,7 +19,8 @@ class JarNode
   type           : ''
 
 
-module.exports.StyleNode = class ScriptNode extends JarNode
+module.exports.StyleNode = class StyleNode extends JarNode
+  contentType    : 'text/css'
 
   ###
   ...
@@ -68,10 +69,10 @@ module.exports.StyleNode = class ScriptNode extends JarNode
         # .set('linenos', true)
         .use(nib())
         .render((err, css)=>
-          throw err if (err)
+          callback(err) if (err)
 
           @contents = css
-          callback(err)
+          callback()
         )
     )
 
@@ -83,6 +84,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
   moduleId       : "" # way to identify the AMD modules
   remote         : false
   modularize     : false
+  contentType    : 'application/javascript'
 
   ###
   ...
