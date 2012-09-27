@@ -29,9 +29,11 @@ module.exports = class Jar
 
     options.dir   = path.resolve(options.dir)
     options.main  = path.join(options.dir, "#{options.main}.coffee")
-    options.style = path.join(options.dir, "#{options.style}.styl")
 
-    death "Missing main style sheet: #{options.style}" unless fs.existsSync(options.style)
+    if options.style?
+      options.style = path.join(options.dir, "#{options.style}.styl")
+      death "Missing main style sheet: #{options.style}" unless fs.existsSync(options.style)
+    
     death "Missing main: #{options.main}" unless fs.existsSync(options.main)
 
     # listen for jar changes and additions
@@ -61,7 +63,7 @@ module.exports = class Jar
     for v in @options.vendors
       @addVendorDependency(v)
 
-    @addStyleDependency(@options.style)
+    @addStyleDependency(@options.style) if @options.style?
 
     if @production
       # @buildProduction(@vendorDependencies, 'vendor')

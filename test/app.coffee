@@ -29,8 +29,7 @@ app.configure ->
       url_root: '/scripts'
       build_dir: './test/public'
       vendors: [
-        # use cdn
-        'http://code.jquery.com/jquery-1.8.2.min.js' 
+        'http://code.jquery.com/jquery-1.8.2.min.js' # use cdn
         './test/vendor/almond.js'
         './test/vendor/handlebars.js'
       ]
@@ -39,8 +38,12 @@ app.configure ->
       dir: './test/app_admin'
       main: 'main'
       style: 'styles/main'
-      vendors: [
-      ]
+      vendors: [ ]
+
+    js: # namespace
+      common: false
+      dir: './test/app_admin'
+      main: 'other'
 
   app.use express.favicon()
   app.use express.logger("dev")

@@ -52,9 +52,11 @@ class Blender
     for name, jarOptions of options
       continue if name == 'common'
 
-      # merge in the common vendors
       jarOptions.vendors ?= []
-      jarOptions.vendors = _.union(options.common.vendors, jarOptions.vendors)
+
+      # merge in the common vendors
+      if !jarOptions.common? || jarOptions.common
+        jarOptions.vendors = _.union(options.common.vendors, jarOptions.vendors)
 
       # construct a new named jar
       @jars[name] = jar = new Jar(name, @emitter, options.common.url_root, @production, jarOptions)
