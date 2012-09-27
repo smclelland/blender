@@ -17,11 +17,11 @@ Compiles my favorites from each.
 
   - Multiple sub-apps each with it's own dependency chain
     - Name spacing
-    - Common and app specific vendor scripts.  i.e. Admin requires backbone.js but the main site does not.
+    - Common and app specific vendor scripts.  i.e. Admin requires backbone.js but the main site does not
   
   - CDN support
   
-  - Automatic wrapping in requirejs AMD compliant modules
+  - Automatic wrapping in requirejs, AMD compliant modules
     - Optional wrapping of vendor provided 
   
   - Production builds
@@ -79,17 +79,30 @@ Compiles my favorites from each.
 ```html
 <html>
   <head>
-    <title>My Site</title>
-    <script src="/javascripts/jquery.js">
-    </script><script src="/javascripts/app.js"></script>
+        
+    <!-- blender style-->
+    <link rel="stylesheet" href="/scripts/admin/styles/main.css">
+    <!-- end blender  -->
+
+        
+    <!-- blender vendor-->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="/scripts/admin/jquery.js"></script>
+    <script type="text/javascript" src="/scripts/admin/almond.js"></script>
+    <script type="text/javascript" src="/scripts/admin/handlebars.js"></script>
+    <!-- end blender  -->
+
+    <!-- blender user-->
+    <script type="text/javascript" src="/scripts/admin/main.js"></script>
+    <script type="text/javascript" src="/scripts/admin/models/test.js"></script>
+    <script type="text/javascript" src="/scripts/admin/models/hope.js"></script>
+    <script type="text/javascript" src="/scripts/admin/templates/temp.js"></script>
+    <!-- end blender  -->
+
+    <script>require("main");</script>
+
   </head>
-  <body>
-    <h1>My Site</h1>
-    <p>Welcome to my super lame site.</p>
-    <div id="footer">
-      <p>Copyright>(c) foobar</p>
-    </div>
-  </body>
+  <body>Something is going down here</body>
 </html>
 ```
 
