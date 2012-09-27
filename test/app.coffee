@@ -26,7 +26,8 @@ app.configure ->
   ###
   blender.blend app,     
     common:
-      url_root: '/scripts'
+      # production_host: 'whatever.com'
+      url_path: '/scripts'
       build_dir: './test/public'
       vendors: [
         'http://code.jquery.com/jquery-1.8.2.min.js' # use cdn
@@ -40,10 +41,12 @@ app.configure ->
       style: 'styles/main'
       vendors: [ ]
 
-    js: # namespace
+    header: # namespace
+      package: true
       common: false
       dir: './test/app_admin'
-      main: 'other'
+      main: 'header'
+      vendors: ['http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js']
 
   app.use express.favicon()
   app.use express.logger("dev")

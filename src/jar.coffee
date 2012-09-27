@@ -66,8 +66,17 @@ module.exports = class Jar
     @addStyleDependency(@options.style) if @options.style?
 
     if @production
-      # @buildProduction(@vendorDependencies, 'vendor')
-      # @buildProduction(@userDependencies, 'user', true)
+      if @options.package
+        sugar.warn("Common packages are included in #{@name} package") if @options.common
+
+        # merge the two dependency lists together
+        packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
+        @buildProduction(packagedDependencies, "#{@name}_packaged", true)
+      else
+        @buildProduction(@vendorDependencies, "#{@name}_vendor")
+        @buildProduction(@userDependencies, "#{@name}_user", true)
+
+      # @buildProduction(@styleDependencies, 'style', true)
     else
       @buildDevelopment(@jsTagList, @vendorDependencies, 'vendor')
       @buildDevelopment(@jsTagList, @userDependencies, 'user')
@@ -177,23 +186,29 @@ module.exports = class Jar
   ###
   buildProduction: (dependencies, description, minify = false)->
     buffer = ''
-    for k, node of dependencies
-      buffer += "\n/* #{node.outputName} */\n #{s.contents}"
 
-    buffer = @minify(buffer) if minify
+    for key, node of dependencies
+      # sugar.info("#{node.contents}")
+      if node.remote
+        @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{key}\"></script>")
+      else
+        buffer += node.contents
 
-    hash = @hashContents(buffer)
-    fileName = "#{description}-#{hash}.js"
-    filePath = path.join(@buildPath, fileName)
+    if buffer.length > 0
+      # buffer = @minify(buffer) if minify
 
+      hash = @hashContents(buffer)
+      fileName = "#{description}-#{hash}.js"
+      filePath = path.join(@options.js_build_dir, fileName)
+      src = "#{@urlRoot}/#{fileName}"
 
-    fs.writeFile(path.resolve(filePath), buffer, (err) ->
-      throw err if err
-      sugar.info("Blender write production: #{description}".blue)
-    )
+      fs.writeFile(path.resolve(filePath), buffer, (err) ->
+        throw err if err
+        sugar.info("Blender write production: #{description}".blue)
+      )
 
-    src = "#{@buildHost}/#{fileName}"
-    @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{src}\"></script>")
+      @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{src}\"></script>")
+
 
 
   ###
@@ -208,7 +223,6 @@ module.exports = class Jar
         src = node.outputPath
       else
         src = path.join(@urlRoot, @name, node.outputPath, node.outputName)
-
 
       switch node.type
         when 'script' then tagList.push("\n<script type=\"text/javascript\" src=\"#{src}\"></script>")

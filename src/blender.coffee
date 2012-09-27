@@ -45,21 +45,36 @@ class Blender
     options.common.js_build_dir = path.resolve("#{path.join(options.common.build_dir, 'scripts')}" )
     options.common.css_build_dir = path.resolve("#{path.join(options.common.build_dir, 'styles')}")
 
+    urlRoot = ''
+
     # optionally allow changing of the root in the generated url
-    options.common.url_root = '/blender' unless options.common.url_root?
+    options.common.url_path = '/blender' unless options.common.url_path?
+      
+    if @production
+      if options.common.production_host? 
+        urlRoot = "http://#{path.join(options.common.production_host, options.common.url_path)}" 
+      else
+        urlRoot = options.common.url_path
+        
+    else
+      urlRoot = options.common.url_path
+
+    console.log "URLROOT: #{urlRoot}"
 
     # process the jars
     for name, jarOptions of options
       continue if name == 'common'
 
       jarOptions.vendors ?= []
+      jarOptions.js_build_dir = options.common.js_build_dir
+      jarOptions.css_build_dir = options.common.css_build_dir
 
       # merge in the common vendors
       if !jarOptions.common? || jarOptions.common
         jarOptions.vendors = _.union(options.common.vendors, jarOptions.vendors)
 
       # construct a new named jar
-      @jars[name] = jar = new Jar(name, @emitter, options.common.url_root, @production, jarOptions)
+      @jars[name] = jar = new Jar(name, @emitter, urlRoot, @production, jarOptions)
       jar.build()
 
     @rebuildUrlIndex()
@@ -71,7 +86,7 @@ class Blender
   middleWare: (req, res, next) =>
     return next() unless 'GET' == req.method
 
-    urlRoot = @options.common.url_root
+    urlRoot = @options.common.url_path
     return next() unless req.url.slice(0, urlRoot.length) == urlRoot
 
     urlPath = req.url.split('/')
