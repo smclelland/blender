@@ -1,0 +1,36 @@
+{
+  "name": "blender",
+  "description": "Blender",
+  "version": "0.0.1",
+  "private": true,
+  "author": {
+    "name": "Steve"
+  },
+  "engines": {
+    "node": "0.8.x"
+  },
+  "scripts": {
+    "start": "node app"
+  },
+  "main": "lib/blender.js",
+  "readme": "# blender",
+  "_id": "blender@0.0.1",
+  "dist": {
+    "shasum": "3b2cf6eae3b155e5e72fc0a025872d2b29a96071"
+  },
+  "dependencies": {
+    "coffee-script": "*",
+    "underscore": "*",
+    "stylus": "*",
+    "connect-assets" : "*",
+    "socket.io" : "*",
+    "handlebars" : "*",
+    "sugar" : "git+ssh://git@github.com/jimlears/sugar.git",
+    "uglify-js" : "*",
+    "stylus" : "*",
+    "nib": "*",
+    "debug": "git://github.com/visionmedia/debug.git",
+    "async": "*",
+    "sync" : "*"
+  }
+}

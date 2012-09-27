@@ -1,0 +1,14 @@
+# .nodemonignore file
+#
+# This is an example of a comment
+#
+# You can list individual files in the ignore list, or they can be
+# file patterns. For example:
+#
+.DS_Store
+/vendor/*
+/public/*
+/test/public/*
+/test/app_admin/*
+/test/app_client/*
+/.git/*
