@@ -69,6 +69,8 @@ class Blender
       jarOptions.js_build_dir = options.common.js_build_dir
       jarOptions.css_build_dir = options.common.css_build_dir
 
+      jarOptions.minify ?= true
+
       # merge in the common vendors
       if !jarOptions.common? || jarOptions.common
         jarOptions.vendors = _.union(options.common.vendors, jarOptions.vendors)
@@ -100,12 +102,9 @@ class Blender
 
     sugar.info("Blender serve: #{req.url}".blue)
 
-    # console.log "URL: #{req.url}"
-    # for k,v of @nodeIndex
-    #   console.log "KEY: #{k} #{v.pathName}"
-
     res.set('Content-Type', node.contentType)
     res.send(node.contents)
+
 
   ###
   will it blend?

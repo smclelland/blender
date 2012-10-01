@@ -4,6 +4,7 @@ uglify = require("uglify-js")
 crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
+async = require 'async'
 
 {ScriptNode} = require('./jarnode')
 {StyleNode} = require('./jarnode')
@@ -40,6 +41,8 @@ module.exports = class Jar
     @emitter.on('change', (jar, node)=>@onChange(jar, node))
 
 
+
+
   ###
   main build process
   ###
@@ -63,34 +66,40 @@ module.exports = class Jar
     for v in @options.vendors
       @addVendorDependency(v)
 
-    @addStyleDependency(@options.style) if @options.style?
+    async.series([
+      (callback)=>
+        @addStyleDependency(@options.style, callback) if @options.style?
+      ,
+      (callback)=>
+        if @production
+          if @options.package
+            sugar.warn("Common packages are included in #{@name} package") if @options.common
 
-    if @production
-      if @options.package
-        sugar.warn("Common packages are included in #{@name} package") if @options.common
+            # merge the two dependency lists together
+            packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
+            @buildProduction(packagedDependencies, "#{@name}_packaged", @options.minify)
+          else
+            @buildProduction(@vendorDependencies, "#{@name}_vendor", false)
+            @buildProduction(@userDependencies, "#{@name}_user", @options.minify)
+          
+          @buildProductionStyle(@styleDependencies, 'style')
 
-        # merge the two dependency lists together
-        packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
-        @buildProduction(packagedDependencies, "#{@name}_packaged", true)
-      else
-        @buildProduction(@vendorDependencies, "#{@name}_vendor")
-        @buildProduction(@userDependencies, "#{@name}_user", true)
-
-      # @buildProduction(@styleDependencies, 'style', true)
-    else
-      @buildDevelopment(@jsTagList, @vendorDependencies, 'vendor')
-      @buildDevelopment(@jsTagList, @userDependencies, 'user')
-      @buildDevelopment(@cssTagList, @styleDependencies, 'style')
+        else
+          @buildDevelopment(@jsTagList, @vendorDependencies, 'vendor')
+          @buildDevelopment(@jsTagList, @userDependencies, 'user')
+          @buildDevelopment(@cssTagList, @styleDependencies, 'style')
 
 
-    @buildInitialize()
+        @buildInitialize()
 
-    # cache up the final tags
-    @jsTags = @jsTagList.join('')
-    @cssTags = @cssTagList.join('')
+        # cache up the final tags
+        @jsTags = @jsTagList.join('')
+        @cssTags = @cssTagList.join('')
 
-    endTime = new Date().getTime()
-    sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
+        endTime = new Date().getTime()
+        sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
+    ])
+
 
   ###
   recursively walk these bitches
@@ -103,12 +112,14 @@ module.exports = class Jar
         node = @addUserDependency(dep)
         @walkUserDependencies(node)
 
-  addStyleDependency: (pathName)->
+  addStyleDependency: (pathName, callback)->
     sugar.info("add style dep: #{pathName}")
     node = new StyleNode(pathName, @options.dir)
-    @styleDependencies[pathName] = node
-
-    @watch(node)
+    node.build((err)=>
+      @styleDependencies[pathName] = node
+      @watch(node)
+      callback(err)
+    )
     return node
 
   ###
@@ -139,9 +150,6 @@ module.exports = class Jar
 
       vendorPath = path.resolve(vendorPath)
       vendorRootPath = path.dirname(vendorPath)
-
-      # sugar.warn("#{vendorPath}")
-      # sugar.warn("#{vendorRootPath}")
 
     node = new ScriptNode(vendorPath, vendorRootPath, modularize, remote)
     @vendorDependencies[pathName] = node
@@ -181,6 +189,32 @@ module.exports = class Jar
   buildInitialize: ->
     @jsTagList.push("\n<script>require(\"#{@rootNode.moduleId}\");</script>\n")
 
+  buildProductionStyle: (dependencies, description)->
+
+    buffer = ''
+    for key, node of dependencies
+      sugar.info("CONTENTS")
+      sugar.info(node.contents)
+
+      if node.remote
+        @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{key}\" type=\"text/css\" media=\"screen\">")
+      else
+        buffer += node.contents
+
+    if buffer.length > 0
+      hash = @hashContents(buffer)
+
+      fileName = "#{description}-#{hash}.css"
+      @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{@urlRoot}/#{fileName}\" type=\"text/css\" media=\"screen\">")
+
+      filePath = path.join(@options.js_build_dir, fileName)
+
+      fs.writeFile(path.resolve(filePath), buffer, (err) ->
+        throw err if err
+        sugar.info("Blender write production: #{description}".blue)
+      )
+
+
   ###
   builds the production files
   ###
@@ -188,27 +222,24 @@ module.exports = class Jar
     buffer = ''
 
     for key, node of dependencies
-      # sugar.info("#{node.contents}")
       if node.remote
         @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{key}\"></script>")
       else
         buffer += node.contents
 
     if buffer.length > 0
-      # buffer = @minify(buffer) if minify
-
+      buffer = @minify(buffer) if minify
       hash = @hashContents(buffer)
+
       fileName = "#{description}-#{hash}.js"
+      @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{@urlRoot}/#{fileName}\"></script>")
+
       filePath = path.join(@options.js_build_dir, fileName)
-      src = "#{@urlRoot}/#{fileName}"
 
       fs.writeFile(path.resolve(filePath), buffer, (err) ->
         throw err if err
         sugar.info("Blender write production: #{description}".blue)
       )
-
-      @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{src}\"></script>")
-
 
 
   ###
@@ -259,11 +290,17 @@ module.exports = class Jar
   watch: (node)->
     options = { persistent: @options.persistent }
 
-    options.interval = 100
     @watchList.push(node.pathName)
+
+    options.interval = 100
     fs.watchFile(node.pathName, options, (curr, prev) =>
-      if curr.mtime.getTime() isnt prev.mtime.getTime()
-        @emitter.emit('change', this, node) 
+      @emitter.emit('change', this, node)  if curr.mtime.getTime() isnt prev.mtime.getTime()
     )
 
     @emitter.emit('add', this, node)
+
+
+
+
+
+

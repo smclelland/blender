@@ -29,7 +29,6 @@
     "stylus" : "*",
     "nib": "*",
     "debug": "git://github.com/visionmedia/debug.git",
-    "async": "*",
-    "sync" : "*"
+    "async": "*"
   }
 }

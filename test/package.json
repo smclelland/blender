@@ -25,7 +25,8 @@
     "nib": "*",
     "debug": "git://github.com/visionmedia/debug.git",
     "async": "*",
-    "sync" : "*"  }
+    "chokidar" : "*"  
+  }
 }
 
 

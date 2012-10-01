@@ -6,8 +6,6 @@ coffeeScript = require('coffee-script')
 handlebars = require 'handlebars'
 stylus = require 'stylus'
 nib = require 'nib'
-Sync = require('sync');
-
 death = require('./util').death
 
 class JarNode
@@ -34,35 +32,23 @@ module.exports.StyleNode = class StyleNode extends JarNode
     [file, ext] = @baseName.split('.')
     @outputName = "#{file}.css"
 
-    @build()
-
   ###
   Rebuild
   ###
-  build: ->
+  build: (callback)->
     if @remote
       @outputPath = @pathName
     else
-      @compileStylusSync()
+      @compileStylus(callback)
 
-
-  ###
-  Synchronously run stylus compile in a fiber
-  ###
-  compileStylusSync: ->
-    Sync(
-      =>
-        @compileStylus.sync()
-      (err)=>
-        death err.message if err
-    )
+    return callback()
 
   ###
   ...
   ###
   compileStylus: (callback)=>
     fs.readFile(@pathName, "utf8", (err, data)=>
-      throw err if (err) 
+      throw err if (err)
 
       stylus(data)
         .set('compress', @production)
@@ -70,8 +56,9 @@ module.exports.StyleNode = class StyleNode extends JarNode
         .use(nib())
         .render((err, css)=>
           callback(err) if (err)
-
           @contents = css
+
+          @waiting = false
           callback()
         )
     )
