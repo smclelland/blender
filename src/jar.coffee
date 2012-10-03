@@ -5,6 +5,7 @@ crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
 async = require 'async'
+zlib = require('zlib')
 
 {ScriptNode} = require('./jarnode')
 {StyleNode} = require('./jarnode')
@@ -27,7 +28,6 @@ module.exports = class Jar
   watchList          : []
 
   constructor: (@name, @emitter, @urlRoot, @production, @options)->
-
     options.dir   = path.resolve(options.dir)
     options.main  = path.join(options.dir, "#{options.main}.coffee")
 
@@ -41,12 +41,10 @@ module.exports = class Jar
     @emitter.on('change', (jar, node)=>@onChange(jar, node))
 
 
-
-
   ###
   main build process
   ###
-  build: ->
+  build: (callback)->
     startTime = new Date().getTime()
   
     # clean out
@@ -67,9 +65,14 @@ module.exports = class Jar
       @addVendorDependency(v)
 
     async.series([
+      # set up styles
       (callback)=>
-        @addStyleDependency(@options.style, callback) if @options.style?
+        if @options.style?
+          return @addStyleDependency(@options.style, callback) 
+        else
+          return callback()
       ,
+      # build everything
       (callback)=>
         if @production
           if @options.package
@@ -77,10 +80,10 @@ module.exports = class Jar
 
             # merge the two dependency lists together
             packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
-            @buildProduction(packagedDependencies, "#{@name}_packaged", @options.minify)
+            @buildProductionScript(packagedDependencies, "#{@name}_packaged", @options.minify)
           else
-            @buildProduction(@vendorDependencies, "#{@name}_vendor", false)
-            @buildProduction(@userDependencies, "#{@name}_user", @options.minify)
+            @buildProductionScript(@vendorDependencies, "#{@name}_vendor", false)
+            @buildProductionScript(@userDependencies, "#{@name}_user", @options.minify)
           
           @buildProductionStyle(@styleDependencies, 'style')
 
@@ -98,8 +101,13 @@ module.exports = class Jar
 
         endTime = new Date().getTime()
         sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
-    ])
 
+        return callback()
+    ], 
+    # finally
+    (err)=>
+      callback(err)
+    )
 
   ###
   recursively walk these bitches
@@ -112,15 +120,20 @@ module.exports = class Jar
         node = @addUserDependency(dep)
         @walkUserDependencies(node)
 
+  ###
+  ...
+  ###
   addStyleDependency: (pathName, callback)->
     sugar.info("add style dep: #{pathName}")
     node = new StyleNode(pathName, @options.dir)
     node.build((err)=>
+      return callback(err) if (err)
+
       @styleDependencies[pathName] = node
       @watch(node)
-      callback(err)
+
+      return callback()
     )
-    return node
 
   ###
   
@@ -189,13 +202,28 @@ module.exports = class Jar
   buildInitialize: ->
     @jsTagList.push("\n<script>require(\"#{@rootNode.moduleId}\");</script>\n")
 
+  ###
+  ..
+  ###
+  writeProductionFile: (filePath, buffer)->
+    err = fs.writeFileSync(path.resolve(filePath), buffer)
+    throw err if err
+
+    # store a gzipped version of the file alongside
+    zlib.gzip(buffer, (err,result)->
+      fs.writeFile(path.resolve("#{filePath}.gz"), result, (err) ->
+        throw err if err
+      )
+    )
+
+  ###
+  builds the production files
+  ###
   buildProductionStyle: (dependencies, description)->
-
     buffer = ''
-    for key, node of dependencies
-      sugar.info("CONTENTS")
-      sugar.info(node.contents)
 
+    for key, node of dependencies
+      # remote files are simple URLs, otherwise buffer up the content
       if node.remote
         @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{key}\" type=\"text/css\" media=\"screen\">")
       else
@@ -205,23 +233,22 @@ module.exports = class Jar
       hash = @hashContents(buffer)
 
       fileName = "#{description}-#{hash}.css"
-      @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{@urlRoot}/#{fileName}\" type=\"text/css\" media=\"screen\">")
+      @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{@urlRoot}/styles/#{fileName}\" type=\"text/css\" media=\"screen\">")
 
-      filePath = path.join(@options.js_build_dir, fileName)
+      # make sure the dir exists
+      fs.mkdirSync(@options.css_build_dir) unless fs.existsSync(@options.css_build_dir)
+      filePath = path.join(@options.css_build_dir, fileName)
 
-      fs.writeFile(path.resolve(filePath), buffer, (err) ->
-        throw err if err
-        sugar.info("Blender write production: #{description}".blue)
-      )
-
+      @writeProductionFile(filePath, buffer)
 
   ###
   builds the production files
   ###
-  buildProduction: (dependencies, description, minify = false)->
+  buildProductionScript: (dependencies, description, minify = false)->
     buffer = ''
 
     for key, node of dependencies
+      # remote files are simple URLs, otherwise buffer up the content
       if node.remote
         @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{key}\"></script>")
       else
@@ -232,14 +259,12 @@ module.exports = class Jar
       hash = @hashContents(buffer)
 
       fileName = "#{description}-#{hash}.js"
-      @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{@urlRoot}/#{fileName}\"></script>")
+      @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{@urlRoot}/scripts/#{fileName}\"></script>")
 
+      fs.mkdirSync(@options.js_build_dir) unless fs.existsSync(@options.js_build_dir)
       filePath = path.join(@options.js_build_dir, fileName)
 
-      fs.writeFile(path.resolve(filePath), buffer, (err) ->
-        throw err if err
-        sugar.info("Blender write production: #{description}".blue)
-      )
+      @writeProductionFile(filePath, buffer)
 
 
   ###

@@ -47,19 +47,15 @@ class Blender
 
     urlRoot = ''
 
-    # optionally allow changing of the root in the generated url
-    options.common.url_path = '/blender' unless options.common.url_path?
-      
     if @production
       if options.common.production_host? 
-        urlRoot = "http://#{path.join(options.common.production_host, options.common.url_path)}" 
+        urlRoot = "http://#{path.join(options.common.production_host)}" 
       else
-        urlRoot = options.common.url_path
-        
+        options.common.url_path = '/' unless options.common.url_path?
     else
+      # optionally allow changing of the root in the generated url
+      options.common.url_path = '/blender' unless options.common.url_path?
       urlRoot = options.common.url_path
-
-    console.log "URLROOT: #{urlRoot}"
 
     # process the jars
     for name, jarOptions of options
@@ -77,10 +73,9 @@ class Blender
 
       # construct a new named jar
       @jars[name] = jar = new Jar(name, @emitter, urlRoot, @production, jarOptions)
-      jar.build()
-
-    @rebuildUrlIndex()
-
+      jar.build((err)=>
+        @rebuildUrlIndex()
+      )
 
   ###
   express middleware
@@ -92,7 +87,6 @@ class Blender
     return next() unless req.url.slice(0, urlRoot.length) == urlRoot
 
     urlPath = req.url.split('/')
-    debug(urlPath)
 
     fileExt = urlPath[urlPath.length - 1].split('.')[1]
 
@@ -110,7 +104,6 @@ class Blender
   will it blend?
   ###
   blend: (app, options)->
-    debug("blending")
     sugar.info("=> Blender")
 
     @init(options)

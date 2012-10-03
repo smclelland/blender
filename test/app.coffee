@@ -27,7 +27,6 @@ app.configure ->
   blender.blend app,     
     common:
       # production_host: 'whatever.com'
-      url_path: '/scripts'
       build_dir: './test/public'
       vendors: [
         'http://code.jquery.com/jquery-1.8.2.min.js' # use cdn

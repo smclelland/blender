@@ -39,7 +39,7 @@ module.exports.StyleNode = class StyleNode extends JarNode
     if @remote
       @outputPath = @pathName
     else
-      @compileStylus(callback)
+      return @compileStylus(callback)
 
     return callback()
 
