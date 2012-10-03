@@ -45,17 +45,14 @@ class Blender
     options.common.js_build_dir = path.resolve("#{path.join(options.common.build_dir, 'scripts')}" )
     options.common.css_build_dir = path.resolve("#{path.join(options.common.build_dir, 'styles')}")
 
-    urlRoot = ''
-
     if @production
       if options.common.production_host? 
-        urlRoot = "http://#{path.join(options.common.production_host)}" 
+        options.common.url_path = "http://#{options.common.production_host}/#{options.common.url_path}" 
       else
-        options.common.url_path = '/' unless options.common.url_path?
+        options.common.url_path = '' unless options.common.url_path?
     else
       # optionally allow changing of the root in the generated url
       options.common.url_path = '/blender' unless options.common.url_path?
-      urlRoot = options.common.url_path
 
     # process the jars
     for name, jarOptions of options
@@ -72,7 +69,7 @@ class Blender
         jarOptions.vendors = _.union(options.common.vendors, jarOptions.vendors)
 
       # construct a new named jar
-      @jars[name] = jar = new Jar(name, @emitter, urlRoot, @production, jarOptions)
+      @jars[name] = jar = new Jar(name, @emitter, options.common.url_path, @production, jarOptions)
       jar.build((err)=>
         @rebuildUrlIndex()
       )
