@@ -59,7 +59,7 @@ module.exports.StyleNode = class StyleNode extends JarNode
           @contents = css
 
           @waiting = false
-          callback()
+          return callback()
         )
     )
 

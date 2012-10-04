@@ -29,7 +29,9 @@ app.configure ->
       # production_host: 'whatever.com'
       build_dir: './test/public'
       vendors: [
-        'http://code.jquery.com/jquery-1.8.2.min.js' # use cdn
+        'jquery' # use bower
+        'backbone' # use bower
+        # 'http://code.jquery.com/jquery-1.8.2.min.js' # use cdn
         './test/vendor/almond.js'
         './test/vendor/handlebars.js'
       ]

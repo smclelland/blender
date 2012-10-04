@@ -23,6 +23,7 @@ build = (watch = false) ->
     
   cmd += " -w" if watch
   cmd += " -o 'lib' 'src'"
+  # cmd += " & nodemon --delay 3 "
   
   execute(cmd)
 
@@ -45,7 +46,7 @@ task 'install', 'Installs and configures everything the server needs', ->
 
 task 'build', 'Compile CoffeeScript source files', ->
   print "#{package_name} build\n"
-  build()
+  build(true)
 
 task 'test', 'Compile CoffeeScript source files', ->
   print "#{package_name} test\n"

@@ -6,6 +6,14 @@ stylus = require 'stylus'
 nib = require 'nib'
 async = require 'async'
 zlib = require('zlib')
+bower = require('bower')
+
+jam = require('jamjs')
+jam.ls('./', (err, output, packages)->
+  console.log "*** CALL"
+)
+
+
 
 {ScriptNode} = require('./jarnode')
 {StyleNode} = require('./jarnode')
@@ -61,10 +69,10 @@ module.exports = class Jar
     @rootNode = @addUserDependency(@options.main)
     @walkUserDependencies(@rootNode)
 
-    for v in @options.vendors
-      @addVendorDependency(v)
-
     async.series([
+      (callback)=>
+        @addVendorDependencies(@options.vendors, callback)
+
       # set up styles
       (callback)=>
         if @options.style?
@@ -147,29 +155,128 @@ module.exports = class Jar
     return node
 
   ###
+  Look for bower ./components  
+  ###
+  resolveBowerDependencies: (vendors)->
+    results = {}
+    bowerDir = path.resolve('./components')
+
+    # dirs = fs.readdirSync(bowerDir)
+    # for dir in dirs
+    #   compPath = path.join(bowerDir, dir)
+    #   compJsonPath = path.join(compPath, 'component.json')
+
+    #   if fs.existsSync(compJsonPath)
+    #     compJson = JSON.parse(fs.readFileSync(compJsonPath))
+    #     if compJson._id?
+    #       console.log compJson.name
+    #       # console.log compJson.main
+
+    resolve = (componentJson, checkDependency)->
+      # make sure we have this component in our results
+      if componentJson._id?
+        componentDir = path.join(bowerDir, componentJson.name)
+        componentFile = path.join(componentFile, 'component.json')
+
+        # some use an array of main files, use the first one in that case
+        mainVal = componentJson.main
+        if _.isArray(componentJson.main)
+          mainVal = _.first(componentJson.main)
+
+        mainFile = path.join(componentDir, mainVal)
+        if @production
+          baseName = path.basename(componentJson.main)
+          [name, ext] =  baseName.split('.')
+
+          # attempt to use the minified version (if it exists) in production
+          mainFileMin = path.join(componentDir, "#{name}-min.#{ext}")
+          mainFile = mainFileMin if fs.existsSync(mainFileMin)
+
+        console.log "GG #{componentJson.name}"
+        results[componentJson.name] =
+          main: mainFile
+          dependencies: (k for k of componentJson.dependencies)
+
+      for name, version of componentJson.dependencies
+        # try two different path styles (/component and /component.js)
+        depComponentFile = path.join(bowerDir, name, 'component.json')
+        unless fs.existsSync(depComponentFile)
+          depComponentFile = path.join(bowerDir, "#{name}.js", 'component.json')
+
+          unless fs.existsSync(depComponentFile)
+            death "Missing bower dependency [#{name}] (forgot to add it to ./component.json or 'bower install')"
+
+        depComponentJson = JSON.parse(fs.readFileSync(depComponentFile))
+
+        # verify that this is being included
+        if checkDependency 
+          if (_.indexOf(vendors, name) != -1)
+            # recursively resolve subdependency
+            resolve(depComponentJson, false)
+        else
+          resolve(depComponentJson, false)
+          
+
+    if fs.existsSync('./component.json')
+      rootComponentJson = JSON.parse(fs.readFileSync('./component.json'))
+      resolve(rootComponentJson, true)
+    else
+      sugar.warn("No bower components.json found in project root")
+
+    return results
+
+  ###
   ./vendor
   ###
-  addVendorDependency: (pathName)->
-    # support remote vendor urls
-    remote = (pathName.substring(0, 7) == "http://")
-    modularize = false
-    vendorPath = pathName
+  addVendorDependencies: (vendors, callback)->
+    bowerDependencies = @resolveBowerDependencies(vendors)
 
-    unless remote
-      # check for surrounding [] to indicate that it should be modularized
-      if pathName[0] == '[' && pathName[pathName.length - 1] == ']'
-        vendorPath = pathName.slice(1, pathName.length - 1)
-        modularize = true
+    #inject any missing bower dependencies, above the parent, into the vendors list
+    for name, bd of bowerDependencies
+      for depName in bd.dependencies
+        parentIndex = _.indexOf(vendors, name)
 
-      vendorPath = path.resolve(vendorPath)
+        if _.indexOf(vendors, depName) == -1
+          vendors.splice(parentIndex, 0, depName)
+
+
+    # async.forEachSeries(vendors, (pathName, forEachCallback)=>  
+    for pathName in vendors
+
+      isJs = (pathName.substring(pathName.length - 3, pathName.length) == '.js')
+      isRemote = (pathName.substring(0, 7) == "http://")
+
+      modularize = false
+      vendorPath = pathName
+
+      if !isJs && !isRemote
+        componentName = pathName
+        bowerComponent = bowerDependencies[componentName]
+        throw "Could not resolve bower component path: #{componentName}" unless bowerComponent
+
+        sugar.info("add vendor bower: #{bowerComponent.main}")
+        vendorPath = bowerComponent.main
+
+      else if !isRemote
+        # check for surrounding [] to indicate that it should be modularized
+        if pathName[0] == '[' && pathName[pathName.length - 1] == ']'
+          vendorPath = pathName.slice(1, pathName.length - 1)
+          modularize = true
+
+        vendorPath = path.resolve(vendorPath)
+
+        sugar.info("add vendor local: #{vendorPath}")
+      else
+        sugar.info("add vendor remote: #{vendorPath}")
+
       vendorRootPath = path.dirname(vendorPath)
 
-    node = new ScriptNode(vendorPath, vendorRootPath, modularize, remote)
-    @vendorDependencies[pathName] = node
+      node = new ScriptNode(vendorPath, vendorRootPath, modularize, isRemote)
+      @vendorDependencies[pathName] = node
 
-    @watch(node) unless remote
+      @watch(node) unless isRemote
 
-    return node
+    callback()
 
   ###
   make a nice MD5 hash for the file names in production
