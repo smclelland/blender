@@ -1,5 +1,4 @@
 path = require('path')
-
 fs = require('fs')
 
 coffeeScript = require('coffee-script')
