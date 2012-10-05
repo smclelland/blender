@@ -184,7 +184,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
       # single file dependency
       @dependencies.push(requirePath)
     else
-      death "Can not resolve require dependency in: [#{requirePath}]"
+      sugar.error("\n** Can not resolve require dependency in: [#{requirePath}] **\n")
 
 
   resolveDependency: (requireValue)->

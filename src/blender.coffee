@@ -44,6 +44,7 @@ class Blender
     # resolve full path to build dir
     options.common.js_build_dir = path.resolve("#{path.join(options.common.build_dir, 'scripts')}" )
     options.common.css_build_dir = path.resolve("#{path.join(options.common.build_dir, 'styles')}")
+    options.common.verbose = if options.common.verbose? then options.common.verbose else false
 
     if @production
       if options.common.production_host? 
@@ -61,8 +62,8 @@ class Blender
       jarOptions.vendors ?= []
       jarOptions.js_build_dir = options.common.js_build_dir
       jarOptions.css_build_dir = options.common.css_build_dir
-
       jarOptions.minify ?= true
+      jarOptions.verbose = options.common.verbose
 
       # merge in the common vendors
       if !jarOptions.common? || jarOptions.common

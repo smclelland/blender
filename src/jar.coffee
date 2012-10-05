@@ -119,11 +119,14 @@ module.exports = class Jar
         node = @addUserDependency(dep)
         @walkUserDependencies(node)
 
+  log: (msg)->
+    sugar.info("blender: #{msg}") if @options.verbose
+
   ###
   ...
   ###
   addStyleDependency: (pathName, callback)->
-    sugar.info("add style dep: #{pathName}")
+    @log("add style dep: #{pathName}")
     node = new StyleNode(pathName, @options.dir)
     node.build((err)=>
       return callback(err) if (err)
@@ -138,7 +141,7 @@ module.exports = class Jar
   
   ###
   addUserDependency: (pathName)->
-    sugar.info("add user dep: #{pathName}")
+    @log("add user dep: #{pathName}")
     node = new ScriptNode(pathName, @options.dir, @modularize)
     @userDependencies[pathName] = node
 
@@ -247,9 +250,9 @@ module.exports = class Jar
 
         vendorPath = path.resolve(vendorPath)
 
-        sugar.info("add vendor local: #{vendorPath}")
+        @log("add vendor local: #{vendorPath}")
       else
-        sugar.info("add vendor remote: #{vendorPath}")
+        @log("add vendor remote: #{vendorPath}")
 
       vendorRootPath = path.dirname(vendorPath)
 
