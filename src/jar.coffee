@@ -394,8 +394,9 @@ module.exports = class Jar
   sub-optimal but, good enough for now
   ###
   onChange: (jar, node)->
-    @build()
-    @emitter.emit('jar_rebuild', this, node)
+    @build((err)=>
+      @emitter.emit('jar_rebuild', this, node)
+    )
 
   ###
   unwatcher
