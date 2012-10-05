@@ -106,11 +106,7 @@ module.exports = class Jar
         sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
 
         return callback()
-    ], 
-    # finally
-    (err)=>
-      callback(err)
-    )
+    ], callback)
 
   ###
   recursively walk these bitches
@@ -424,9 +420,6 @@ module.exports = class Jar
     )
 
     @emitter.emit('add', this, node)
-
-
-
 
 
 
