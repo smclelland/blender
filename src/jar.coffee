@@ -85,7 +85,7 @@ module.exports = class Jar
             packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
             @buildProductionScript(packagedDependencies, "#{@name}_packaged", @options.minify)
           else
-            @buildProductionScript(@vendorDependencies, "#{@name}_vendor", false)
+            @buildProductionScript(@vendorDependencies, "#{@name}_vendor", @options.minify)
             @buildProductionScript(@userDependencies, "#{@name}_user", @options.minify)
           
           @buildProductionStyle(@styleDependencies, 'style')
@@ -282,10 +282,8 @@ module.exports = class Jar
     pro = uglify.uglify
 
     ast = jsp.parse(buffer)
-
-    # todo: these push it further... needs playing around with
-    # ast = pro.ast_mangle(ast)
-    # ast = pro.ast_squeeze(ast)
+    ast = pro.ast_mangle(ast)
+    ast = pro.ast_squeeze(ast)
     pro.gen_code(ast)
 
 
@@ -338,17 +336,27 @@ module.exports = class Jar
   builds the production files
   ###
   buildProductionScript: (dependencies, description, minify = false)->
-    buffer = ''
+    localNodes = []
 
     for key, node of dependencies
       # remote files are simple URLs, otherwise buffer up the content
       if node.remote
         @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{key}\"></script>")
       else
-        buffer += node.contents
+        # node.contents = ''
+        # console.log node
+        localNodes.push(node)
 
-    if buffer.length > 0
-      buffer = @minify(buffer) if minify
+    if localNodes.length > 0
+      buffer = ''
+
+      for node in localNodes
+        # skip minification if it already contains ".min" in the name
+        if node.pathName.search('.min') == -1 && minify
+          buffer += @minify(node.contents)
+        else
+          buffer += node.contents
+
       hash = @hashContents(buffer)
 
       fileName = "#{description}-#{hash}.js"
