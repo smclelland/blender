@@ -6,6 +6,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 async = require 'async'
 zlib = require('zlib')
+existsSync = fs.existsSync || path.existsSync
 # bower = require('bower')
 
 
@@ -36,9 +37,9 @@ module.exports = class Jar
 
     if options.style?
       options.style = path.join(options.dir, "#{options.style}.styl")
-      death "Missing main style sheet: #{options.style}" unless fs.existsSync(options.style)
+      death "Missing main style sheet: #{options.style}" unless existsSync(options.style)
 
-    death "Missing main: #{options.main}" unless fs.existsSync(options.main)
+    death "Missing main: #{options.main}" unless existsSync(options.main)
 
     # listen for jar changes and additions
     @emitter.on('change', (jar, node)=>@onChange(jar, node))
@@ -175,7 +176,7 @@ module.exports = class Jar
 
           # attempt to use the minified version (if it exists) in production
           mainFileMin = path.join(componentDir, "#{name}-min.#{ext}")
-          mainFile = mainFileMin if fs.existsSync(mainFileMin)
+          mainFile = mainFileMin if existsSync(mainFileMin)
 
         results[componentJson.name] =
           main: mainFile
@@ -184,7 +185,7 @@ module.exports = class Jar
       for name, version of componentJson.dependencies
         # try two different path styles (/component and /component.js)
         depComponentFile = path.join(bowerDir, name, 'component.json')
-        unless fs.existsSync(depComponentFile)
+        unless existsSync(depComponentFile)
           death "Missing bower dependency [#{name}] (forgot to add it to ./component.json or 'bower install')"
 
         depComponentJson = JSON.parse(fs.readFileSync(depComponentFile))
@@ -199,7 +200,7 @@ module.exports = class Jar
           
     # use the ./components folder to build up a virtual object that looks like ./component.json
     # this is done becasue the names don't match 1:1
-    if fs.existsSync(bowerDir)
+    if existsSync(bowerDir)
       rootComponents =
         dependencies: {}
 
@@ -326,7 +327,7 @@ module.exports = class Jar
       @cssTagList.push("\n<link rel=\"stylesheet\" href=\"#{@urlRoot}/styles/#{fileName}\" type=\"text/css\" media=\"screen\">")
 
       # make sure the dir exists
-      fs.mkdirSync(@options.css_build_dir) unless fs.existsSync(@options.css_build_dir)
+      fs.mkdirSync(@options.css_build_dir) unless existsSync(@options.css_build_dir)
       filePath = path.join(@options.css_build_dir, fileName)
 
       @writeProductionFile(filePath, buffer)
@@ -361,7 +362,7 @@ module.exports = class Jar
       fileName = "#{description}-#{hash}.js"
       @jsTagList.push("\n<script type=\"text/javascript\" src=\"#{@urlRoot}/scripts/#{fileName}\"></script>")
 
-      fs.mkdirSync(@options.js_build_dir) unless fs.existsSync(@options.js_build_dir)
+      fs.mkdirSync(@options.js_build_dir) unless existsSync(@options.js_build_dir)
       filePath = path.join(@options.js_build_dir, fileName)
 
       @writeProductionFile(filePath, buffer)
