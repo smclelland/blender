@@ -12,7 +12,7 @@
   "scripts": {
     "start": "node app"
   },
-  "main": "lib/blender.js",
+  "main": "./index.js",
   "readme": "# blender",
   "_id": "blender@0.0.1",
   "dist": {
@@ -31,5 +31,8 @@
     "debug": "git://github.com/visionmedia/debug.git",
     "async": "*",
     "bower": "*"
+  },
+  "scripts": {
+    "prepublish": "npm prune"
   }
 }
