@@ -1,1 +1,1 @@
-require('./lib/blender');
+module.exports = require('./lib/blender');
