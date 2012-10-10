@@ -1,7 +1,7 @@
 fs = require('fs')
 path = require('path')
 
-global.sugar = require('sugar')
+global.sugar = require('k-sugar')
 global._ = require('underscore')
 debug = require('debug')('blender')
 

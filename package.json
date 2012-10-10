@@ -24,7 +24,7 @@
     "stylus": "*",
     "socket.io" : "*",
     "handlebars" : "*",
-    "sugar" : "git+ssh://git@github.com/jimlears/k-sugar.git",
+    "k-sugar" : "git+ssh://git@github.com/jimlears/k-sugar.git",
     "uglify-js" : "*",
     "stylus" : "*",
     "nib": "*",
