@@ -6,6 +6,7 @@ handlebars = require 'handlebars'
 stylus = require 'stylus'
 nib = require 'nib'
 death = require('./util').death
+existsSync = fs.existsSync || path.existsSync
 
 class JarNode
   dependencies   : []
@@ -94,7 +95,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
   The local bizness
   ###
   resolveLocal: ->
-    death "Missing needed dependency: #{@pathName}" unless fs.existsSync(@pathName)
+    death "Missing needed dependency: #{@pathName}" unless existsSync(@pathName)
 
     @dirName = path.dirname(@pathName)
     @baseName = path.basename(@pathName)
@@ -179,7 +180,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
   ###
   resolveFileDependency: (requirePath)->
     # support reading in a single folder of dependencies (only one level deep)
-    if fs.existsSync(requirePath)
+    if existsSync(requirePath)
 
       # single file dependency
       @dependencies.push(requirePath)
@@ -191,7 +192,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
     requireValueSplit = path.basename(requireValue).split('.')
     requirePath = path.join(@dirName, "#{requireValue}")
 
-    if fs.existsSync(requirePath)
+    if existsSync(requirePath)
       if fs.statSync(requirePath).isDirectory()
         @resolveDirDependency(requirePath)
       else
@@ -202,7 +203,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
       if requireValueSplit.length == 1
         requirePath = path.join(@dirName, "#{requireValue}.coffee")
 
-        unless fs.existsSync(requirePath)
+        unless existsSync(requirePath)
           requirePath = path.join(@dirName, "#{requireValue}.hbs")
 
       @resolveFileDependency(requirePath)
