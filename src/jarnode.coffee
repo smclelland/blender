@@ -55,7 +55,11 @@ module.exports.StyleNode = class StyleNode extends JarNode
         # .set('linenos', true)
         .use(nib())
         .render((err, css)=>
-          callback(err) if (err)
+          if (err)
+            # todo: fix
+            sugar.error(err)
+            callback(err) 
+
           @contents = css
 
           @waiting = false
