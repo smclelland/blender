@@ -1,27 +1,24 @@
 # Blender - asset manager
 
- Blender is an asset builder and asset pipeline for building modern web apps.
+ Blender is an asset builder and asset pipeline for building modern web apps.  Linked the concepts of Piler, aspects of the Rails Asset Pipeline, and the build process of Brunch & Yeomen.
 
-## Why?
+## Warning
 
-Liked the concepts of Piler, liked aspects of the Rails Asset Pipeline, liked how Brunch & Yeomen have
-the concept of an "HTML5 app", which can be built.
-
-Compiles my favorites from each.
+ This is very much a prototype!
 
 ## Features
 
-  - Client side modules w/ server side dependency
+  - Client side modules w/ server side dependency resolution
   
-  - Handlebars (precompiled) templates are treated as first class
+  - Handlebars (precompiled) templates are first class
 
   - Multiple sub-apps each with it's own dependency chain
-    - Name spacing
+    - Namespacing
     - Common and app specific vendor scripts.  i.e. Admin requires backbone.js but the main site does not
   
   - CDN support
   
-  - Automatic wrapping in requirejs, AMD compliant modules
+  - Automatic wrapping in Require.js, AMD
     - Optional wrapping of vendor provided 
   
   - Production builds
@@ -29,10 +26,10 @@ Compiles my favorites from each.
     - Minification support 
 
   - Development builds
-    - sub-app level file watching and rebuilding
+    - Sub-app level file watching and rebuilding
     - Served through Express 3 middleware
     - Each file is preserved, one script tag per file
-    - File watching
+    - File watching during development
 
 ## Usage
 
@@ -111,7 +108,7 @@ Compiles my favorites from each.
 
 (The MIT License)
 
-Copyright (c) 2012 Steve McLelland
+Copyright (c) 2013 Steve McLelland
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
