@@ -80,7 +80,7 @@ module.exports = class Jar
       (callback)=>
         if @production
           if @options.package
-            sugar.warn("Common packages are included in #{@name} package") if @options.common
+            # sugar.warn("Common packages are included in #{@name} package") if @options.common
 
             # merge the two dependency lists together
             packagedDependencies = _.extend(@userDependencies, @vendorDependencies)
@@ -104,7 +104,7 @@ module.exports = class Jar
         @cssTags = @cssTagList.join('')
 
         endTime = new Date().getTime()
-        sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
+        # sugar.info("Blender rebuild [#{@name}]: ".blue, "#{(endTime - startTime)}ms".grey)
 
         return callback()
     ], callback)
@@ -121,7 +121,7 @@ module.exports = class Jar
         @walkUserDependencies(node)
 
   log: (msg)->
-    sugar.info("blender: #{msg}") if @options.verbose
+    # sugar.info("blender: #{msg}") if @options.verbose
 
   ###
   ...
@@ -209,7 +209,7 @@ module.exports = class Jar
 
       resolve(rootComponents, true)
     else
-      sugar.warn("No bower components.json found in project root")
+      # sugar.warn("No bower components.json found in project root")
 
     console.log results
     return results

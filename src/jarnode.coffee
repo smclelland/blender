@@ -57,7 +57,7 @@ module.exports.StyleNode = class StyleNode extends JarNode
         .render((err, css)=>
           if (err)
             # todo: fix
-            sugar.error(err)
+            # sugar.error(err)
             callback(err) 
 
           @contents = css
@@ -189,7 +189,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
       # single file dependency
       @dependencies.push(requirePath)
     else
-      sugar.error("\n** Can not resolve require dependency in: [#{requirePath}] **\n")
+      # sugar.error("\n** Can not resolve require dependency in: [#{requirePath}] **\n")
 
 
   resolveDependency: (requireValue)->

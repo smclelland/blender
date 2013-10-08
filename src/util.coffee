@@ -2,7 +2,7 @@
 Helper to show easier to read exceptions
 ###
 module.exports.death = (msg)->
-  sugar.error("Blender: #{msg}".red)
+  # sugar.error("Blender: #{msg}".red)
   throw(msg)
 
 module.exports.homeDir = ->

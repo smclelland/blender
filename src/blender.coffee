@@ -1,7 +1,7 @@
 fs = require('fs')
 path = require('path')
 
-global.sugar = require('k-sugar')
+# global.sugar = require('k-sugar')
 global._ = require('underscore')
 debug = require('debug')('blender')
 
@@ -92,7 +92,7 @@ class Blender
     node = @nodeIndex[req.url]
     return next() unless node
 
-    sugar.info("Blender serve: #{req.url}".blue)
+    # sugar.info("Blender serve: #{req.url}".blue)
 
     res.set('Content-Type', node.contentType)
     res.send(node.contents)
@@ -102,7 +102,7 @@ class Blender
   will it blend?
   ###
   blend: (app, options)->
-    sugar.info("=> Blender")
+    # sugar.info("=> Blender")
 
     @init(options)
       
