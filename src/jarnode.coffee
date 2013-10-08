@@ -23,7 +23,7 @@ module.exports.StyleNode = class StyleNode extends JarNode
   ###
   ...
   ###
-  constructor: (@pathName, @rootPath, @remote = false)->
+  constructor: (@production, @pathName, @rootPath, @remote = false)->
     @type = 'style'
     @dirName = path.dirname(@pathName)
     @baseName = path.basename(@pathName)
@@ -52,6 +52,7 @@ module.exports.StyleNode = class StyleNode extends JarNode
 
       stylus(data)
         .set('compress', @production)
+        .set('include css', true)
         # .set('linenos', true)
         .use(nib())
         .render((err, css)=>
@@ -80,7 +81,7 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
   ###
   ...
   ###
-  constructor: (@pathName, @rootPath, @modularize, @remote = false)->
+  constructor: (@production, @pathName, @rootPath, @modularize, @remote = false)->
     @type = 'script'
     @build()
 
@@ -105,17 +106,6 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
     @baseName = path.basename(@pathName)
     @outputPath = @pathName.replace(@rootPath, '').replace(@baseName, '')
 
-    # sugar.line
-    # sugar.info("> pathName: #{@pathName}")
-    # sugar.info("> dirName: #{@dirName}")
-    # sugar.info("> rootPath: #{@rootPath}")
-    # sugar.info("> outputPath: #{@outputPath}\n")
-
-    # console.log "rootPath: => #{@rootPath}"
-    # console.log "pathName: => #{@pathName}"
-    # console.log "baseName: => #{@baseName}"
-    # console.log "outputPath: => #{@outputPath}\n\n"
-
     [file, ext] = @baseName.split('.')
 
     @contents = fs.readFileSync(@pathName, "utf8")
@@ -130,7 +120,6 @@ module.exports.ScriptNode = class ScriptNode extends JarNode
 
       when "hbs"
         @compileHandleBars()
-        
         @moduleWrap(file) if @modularize
         @outputName = "#{file}.js"
 

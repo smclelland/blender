@@ -28,7 +28,7 @@ module.exports = class Jar
   cssTagList         : []  # list of final tags <script...
   nodeIndex          : {}  # index for fast node lookup during dev mod
   vendors            : []
-  modularize         : true
+  modularize         : false
   watchList          : []
 
   constructor: (@name, @emitter, @urlRoot, @production, @options)->
@@ -128,7 +128,7 @@ module.exports = class Jar
   ###
   addStyleDependency: (pathName, callback)->
     @log("add style dep: #{pathName}")
-    node = new StyleNode(pathName, @options.dir)
+    node = new StyleNode(@production, pathName, @options.dir)
     node.build((err)=>
       return callback(err) if (err)
 
@@ -143,7 +143,7 @@ module.exports = class Jar
   ###
   addUserDependency: (pathName)->
     @log("add user dep: #{pathName}")
-    node = new ScriptNode(pathName, @options.dir, @modularize)
+    node = new ScriptNode(@production, pathName, @options.dir, @modularize)
     @userDependencies[pathName] = node
 
     @watch(node)
@@ -257,7 +257,7 @@ module.exports = class Jar
 
       vendorRootPath = path.dirname(vendorPath)
 
-      node = new ScriptNode(vendorPath, vendorRootPath, modularize, isRemote)
+      node = new ScriptNode(@production, vendorPath, vendorRootPath, modularize, isRemote)
       @vendorDependencies[pathName] = node
 
       @watch(node) unless isRemote
@@ -278,13 +278,7 @@ module.exports = class Jar
   uglify that crap for prod
   ###
   minify: (buffer)->
-    jsp = uglify.parser
-    pro = uglify.uglify
-
-    ast = jsp.parse(buffer)
-    ast = pro.ast_mangle(ast)
-    ast = pro.ast_squeeze(ast)
-    pro.gen_code(ast)
+    uglify.minify(buffer, {fromString: true}).code;
 
 
   ###
